@@ -1,12 +1,20 @@
 const HttpError = require("../helpers/HttpError");
-const Contact = require("../models/contact");
+
+const { Contact } = require("../models/contact");
 const {
   contactValidation,
   favoriteSchema,
-} = require("../models/contact");
+} = require("../validation/contactValidationSchemas");
+
 const getAll = async (req, res, next) => {
   try {
-    const contacts = await Contact.find();
+    const { _id: owner } = req.user;
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    const contacts = await Contact.find({ owner }, "", {
+      skip: 2,
+      limit: 2,
+    }).populate("owner", "name email");
     res.json(contacts);
   } catch (error) {
     next(error);
@@ -16,7 +24,9 @@ const getById = async (req, res, next) => {
   const { contactId } = req.params;
   const contact = await Contact.findById(contactId);
   if (!contact) {
-    return next();
+    const error = new HttpError("Contact not found");
+    error.status = 404;
+    return next(error);
   }
   res.status(200).json(contact);
 };
@@ -30,7 +40,8 @@ const createContact = async (req, res, next) => {
         .status(400)
         .send(error.details.map((err) => err.message).join(","));
     }
-    const contact = await Contact.create(req.body);
+    const { _id: owner } = req.user;
+    const contact = await Contact.create({ ...req.body, owner });
     if (!contact) {
       res
         .status(400)
@@ -82,11 +93,15 @@ const faoriteContact = async (req, res, next) => {
     const { contactId } = req.params;
     const { error } = favoriteSchema.validate(req.body);
     if (error) {
-      throw HttpError(400, "missing field favorite");
+      throw HttpError(406, "missing field favorite");
     }
-    const contact = await Contact.findByIdAndUpdate(contactId, body, {
-      new: true,
-    });
+    const contact = await Contact.findByIdAndUpdate(
+      contactId,
+      req.body,
+      {
+        new: true,
+      }
+    );
     if (!contact) {
       return res.status(404).json({ message: "Not found" });
     }
