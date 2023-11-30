@@ -88,7 +88,7 @@ const updateContact = async (req, res, next) => {
   }
 };
 
-const faoriteContact = async (req, res, next) => {
+const faovoriteContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const { error } = favoriteSchema.validate(req.body);
@@ -117,5 +117,5 @@ module.exports = {
   createContact,
   updateContact,
   removeContact,
-  faoriteContact,
+  faovoriteContact,
 };
