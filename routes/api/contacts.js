@@ -6,7 +6,7 @@ const {
   createContact,
   updateContact,
   removeContact,
-  faoriteContact,
+  faovoriteContact,
 } = require("../../controllers/contactControllers");
 
 const isValidId = require("../../validation/isValidid");
@@ -19,6 +19,11 @@ router.get("/:contactId", authenticate, isValidId, getById);
 router.post("/", authenticate, createContact);
 router.delete("/:contactId", authenticate, removeContact);
 router.put("/:contactId", authenticate, isValidId, updateContact);
-router.patch("/:contactId", authenticate, isValidId, faoriteContact);
+router.patch(
+  "/:contactId",
+  authenticate,
+  isValidId,
+  faovoriteContact
+);
 
 module.exports = router;
